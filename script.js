@@ -12,10 +12,49 @@ const loadVidoes=()=>{
     .catch(error=>console.log(error))
 }
 
+
+const removeActiveClass=()=>{
+    const buttons=document.getElementsByClassName("category-btn");
+    for(btn of buttons){
+        btn.classList.remove("active")
+    }
+}
+
+const loadDetails = async (videoId) => {
+    const uri = `https://openapi.programming-hero.com/api/phero-tube/video/${videoId}`;
+    const res = await fetch(uri);
+    const data = await res.json();
+    displayDetails(data.video);
+};
+
+const displayDetails = (video) => {
+    const detailsContainer = document.getElementById("modal-content");
+
+    detailsContainer.innerHTML = `
+    <img src=${video.thumbnail} />
+    <p>${video.description} </p>
+    `;
+
+    document.getElementById("customModal").showModal(); // Corrected the typo here
+};
+
+
+
+
+
+
+
 const loadCategoryVideos=(id)=>{
     fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`)
     .then(res=>res.json())
-    .then(data=>displayVideo(data.category))
+    .then(data=>{
+        removeActiveClass()
+        const activeBtn=document.getElementById(`btn-${id}`)
+        activeBtn.classList.add("active")
+
+        displayVideo(data.category);
+        
+    })
     .catch(error=>console.log(error))
 }
 
@@ -31,6 +70,11 @@ function getTimeString(time){
 const displayVideo=(videos)=>{
     const videoContainer=document.getElementById("videos")
     videoContainer.innerHTML=""
+
+    if(videos.length==0){
+        videoContainer.innerHTML=`<h1 class="font-bold text-3xl ">No content here</h1>`
+    }
+
     videos.forEach(video=>{
         const card=document.createElement("div")
         card.classList="card card-compact "
@@ -65,7 +109,7 @@ const displayVideo=(videos)=>{
 
         </div>
 
-        <p> </p>
+        <p><button onclick="loadDetails('${video.video_id}')" class="btn btn-sm btn-error">details</button> </p>
 
         </div>
 
@@ -89,7 +133,7 @@ const displayCategories=(categories)=>{
         const buttonContainer=document.createElement("div")
         buttonContainer.innerHTML=`
 
-        <button class="btn" onclick="loadCategoryVideos(${item.category_id})">
+        <button id="btn-${item.category_id}" class="btn category-btn" onclick="loadCategoryVideos(${item.category_id})">
         ${item.category}
         </button>
 
